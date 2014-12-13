@@ -12,7 +12,7 @@
 class Envato_marketplaces {
    protected $api_key;
    protected $cache_dir = 'cache';
-   public $cache_expires = 3;
+   public $cache_expires = 24;
    protected $public_url = 'http://marketplace.envato.com/api/edge/set.json';
 
    
@@ -97,6 +97,20 @@ class Envato_marketplaces {
    {
       $validity = $this->private_user_data($user_name, 'verify-purchase', $purchase_code);
       return isset($validity->buyer) ? $validity : false;
+   }
+
+  /**
+   * Can be used to retrieve the download URL for a purchased item.
+   *
+   * @param $user_name Purchaser's username.
+   * @param $purchase_code - The item purchase code. See Downloads page for 
+   * receipt.
+   * @return string If purchased, returns a string containing the download URL.
+   */ 
+   public function download_purchase($user_name, $purchase_code)
+   {
+      $download_url = $this->private_user_data($user_name, 'download-purchase', $purchase_code);
+      return isset($download_url->download_url) ? $download_url->download_url : false;
    }
 
   /**
@@ -261,6 +275,19 @@ class Envato_marketplaces {
       return $this->fetch($url, 'popular');
    }
 
+  /**
+   * Retrieve the random list of newly uploaded files.
+   *
+   * @param string $marketplace_name Desired marketplace name.
+   * @param int $limit The number of items to return [optional].
+   * @return array A list of random new files in the given marketplace.
+   */
+   public function random_new_files($marketplace_name = 'themeforest', $limit = null)
+   {
+      $url = preg_replace('/set/i', 'random-new-files:' . $marketplace_name, $this->public_url);
+      $random = $this->curl($url)->{'random-new-files'};
+      return $this->apply_limit($random, $limit);
+   }
   /**
    * Perform search queries on all of the marketplaces, or a specific one. 
    *
